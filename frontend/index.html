@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Workload Dashboard</title>
+</head>
+<body>
+
+  <h1>Sistema de Distribuição de Processos</h1>
+
+  <!-- DASHBOARD -->
+  <section class="bloco">
+
+    <h2>Dashboard</h2>
+
+    <select id="statusFilter">
+      <option value="ALL">Todos</option>
+      <option value="ACTIVE">Ativos</option>
+      <option value="INACTIVE">Inativos</option>
+    </select>
+
+    <button onclick="loadWorkload()">
+      Carregar Dashboard
+    </button>
+
+    <div id="resultado"></div>
+
+    <canvas id="workloadChart"></canvas>
+
+  </section>
+
+  <!-- ANALISTAS -->
+  <section class="bloco">
+
+    <h2>Gerenciamento de Analistas</h2>
+
+    <input type="text" id="nomeAnalista" placeholder="Nome do Analista">
+
+    <button onclick="criarAnalista()">
+      Criar Analista
+    </button>
+
+    <div id="listaAnalistas"></div>
+
+  </section>
+
+  <!-- PROCESSOS -->
+  <section class="bloco">
+
+    <h2>Gerenciamento de Processos</h2>
+
+    <input type="text" id="numeroProcesso" placeholder="Número do Processo">
+
+    <button onclick="criarProcesso()">
+      Criar Processo
+    </button>
+
+    <div id="listaProcessos"></div>
+
+  </section>
+
+  <!-- RELATÓRIOS -->
+  <section class="bloco">
+
+    <h2>Relatórios</h2>
+
+    <ul>
+      <li>Lista de Processos</li>
+      <li>Processos por Analista</li>
+      <li>Carga de Trabalho</li>
+    </ul>
+
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

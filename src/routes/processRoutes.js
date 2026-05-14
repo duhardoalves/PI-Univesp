@@ -10,6 +10,8 @@ router.get('/:id', controller.getProcessById);
 
 router.patch('/:id/status', controller.updateStatus);
 
+router.delete('/:id', controller.deleteProcess);
+
 router.get('/', controller.getProcesses);
 
 module.exports = router;
