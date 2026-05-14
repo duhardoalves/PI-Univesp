@@ -1,176 +1,233 @@
 const db = require('../config/db');
 
-// 🚀 CRIAR PROCESSO COM TRANSAÇÃO
+//  CRIAR PROCESSO COM TRANSAÇÃO
 exports.createProcess = (req, res) => {
 
   const { process_number } = req.body;
 
   if (!process_number) {
+
     return res.status(400).json({
       error: 'process_number é obrigatório'
     });
+
   }
 
-  const selectAnalyst = `
-    SELECT a.id
-    FROM analysts a
-    LEFT JOIN assignments ass ON a.id = ass.analyst_id
-    WHERE a.status = 'ACTIVE'
-    GROUP BY a.id
-    ORDER BY COUNT(ass.id) ASC, a.id ASC
-    LIMIT 1
+  // 🔹 Verificar duplicidade
+  const checkProcess = `
+    SELECT 
+      p.process_number,
+      a.name AS analyst_name
+    FROM processes p
+    LEFT JOIN assignments ass
+      ON p.id = ass.process_id
+    LEFT JOIN analysts a
+      ON a.id = ass.analyst_id
+    WHERE p.process_number = ?
   `;
 
-  db.beginTransaction((err) => {
-    if (err) {
-      console.log('ERRO TRANSACTION:', err);
-      return res.status(500).json({ error: 'Erro ao iniciar transação' });
-    }
+  db.query(
+    checkProcess,
+    [process_number],
+    (err, existingProcess) => {
 
-    db.query(selectAnalyst, (err, result) => {
       if (err) {
-        console.log('ERRO SELECT:', err);
-        return db.rollback(() => {
-          return res.status(500).json({ error: 'Erro ao buscar analista' });
+
+        console.log(
+          'ERRO CHECK PROCESS:',
+          err
+        );
+
+        return res.status(500).json({
+          error: 'Erro ao verificar processo'
         });
+
       }
 
-      if (result.length === 0) {
-        return db.rollback(() => {
-          return res.status(400).json({ error: 'Nenhum analista disponível' });
+      // 🔹 Processo já existe
+      if (existingProcess.length > 0) {
+
+        return res.status(400).json({
+
+          error:
+            `O processo ${process_number} já está cadastrado e encontra-se com o analista ${existingProcess[0].analyst_name}.`
+
         });
+
       }
 
-      const analyst_id = result[0].id;
-
-      const insertProcess = `
-        INSERT INTO processes (process_number)
-        VALUES (?)
+      // 🔹 Buscar analista menos ocupado
+      const selectAnalyst = `
+        SELECT a.id, a.name
+        FROM analysts a
+        LEFT JOIN assignments ass
+          ON a.id = ass.analyst_id
+        WHERE a.status = 'ACTIVE'
+        GROUP BY a.id
+        ORDER BY COUNT(ass.id) ASC, a.id ASC
+        LIMIT 1
       `;
 
-      db.query(insertProcess, [process_number], (err, processResult) => {
+      db.beginTransaction((err) => {
+
         if (err) {
-          console.log('ERRO PROCESS:', err);
 
-          return db.rollback(() => {
+          console.log(
+            'ERRO TRANSACTION:',
+            err
+          );
 
-            if (err.code === 'ER_DUP_ENTRY') {
-              return res.status(400).json({
-                error: 'Processo já existe'
-              });
-            }
-
-            return res.status(500).json({
-              error: 'Erro ao criar processo'
-            });
-
+          return res.status(500).json({
+            error: 'Erro ao iniciar transação'
           });
+
         }
 
-        const process_id = processResult.insertId;
+        db.query(
+          selectAnalyst,
+          (err, result) => {
 
-        const insertAssignment = `
-          INSERT INTO assignments (process_id, analyst_id)
-          VALUES (?, ?)
-        `;
-
-        db.query(insertAssignment, [process_id, analyst_id], (err) => {
-          if (err) {
-            console.log('ERRO ASSIGNMENT:', err);
-            return db.rollback(() => {
-              return res.status(500).json({
-                error: 'Erro ao atribuir processo'
-              });
-            });
-          }
-
-          db.commit((err) => {
             if (err) {
+
+              console.log(
+                'ERRO SELECT:',
+                err
+              );
+
               return db.rollback(() => {
-                return res.status(500).json({ error: 'Erro ao finalizar transação' });
+
+                return res.status(500).json({
+                  error: 'Erro ao buscar analista'
+                });
+
               });
+
             }
 
-            return res.json({
-              message: 'Processo criado e atribuído com sucesso',
-              assigned_to: analyst_id
-            });
-          });
+            if (result.length === 0) {
 
-        });
+              return db.rollback(() => {
+
+                return res.status(400).json({
+                  error: 'Nenhum analista disponível'
+                });
+
+              });
+
+            }
+
+            const analyst_id = result[0].id;
+
+            const analyst_name = result[0].name;
+
+            // 🔹 Criar processo
+            const insertProcess = `
+              INSERT INTO processes (process_number)
+              VALUES (?)
+            `;
+
+            db.query(
+              insertProcess,
+              [process_number],
+              (err, processResult) => {
+
+                if (err) {
+
+                  console.log(
+                    'ERRO PROCESS:',
+                    err
+                  );
+
+                  return db.rollback(() => {
+
+                    return res.status(500).json({
+                      error: 'Erro ao criar processo'
+                    });
+
+                  });
+
+                }
+
+                const process_id =
+                  processResult.insertId;
+
+                // 🔹 Criar assignment
+                const insertAssignment = `
+                  INSERT INTO assignments (
+                    process_id,
+                    analyst_id
+                  )
+                  VALUES (?, ?)
+                `;
+
+                db.query(
+                  insertAssignment,
+                  [process_id, analyst_id],
+                  (err) => {
+
+                    if (err) {
+
+                      console.log(
+                        'ERRO ASSIGNMENT:',
+                        err
+                      );
+
+                      return db.rollback(() => {
+
+                        return res.status(500).json({
+                          error:
+                            'Erro ao atribuir processo'
+                        });
+
+                      });
+
+                    }
+
+                    db.commit((err) => {
+
+                      if (err) {
+
+                        return db.rollback(() => {
+
+                          return res.status(500).json({
+                            error:
+                              'Erro ao finalizar transação'
+                          });
+
+                        });
+
+                      }
+
+                      return res.json({
+
+                        message:
+                          `Processo criado e atribuído com sucesso. Encaminhado para ${analyst_name}`,
+
+                        process_id,
+
+                        assigned_to: analyst_name
+
+                      });
+
+                    });
+
+                  }
+                );
+
+              }
+            );
+
+          }
+        );
 
       });
 
-    });
-
-  });
+    }
+  );
 
 };
 
-// 📋 LISTAR PROCESSOS
-exports.getProcesses = (req, res) => {
-
-  const query = `
-    SELECT 
-      p.process_number,
-      a.name AS analyst,
-      ass.assigned_at
-    FROM processes p
-    JOIN assignments ass ON p.id = ass.process_id
-    JOIN analysts a ON a.id = ass.analyst_id
-    ORDER BY ass.assigned_at DESC
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.log('ERRO GET:', err);
-      return res.status(500).json({
-        error: 'Erro ao buscar processos'
-      });
-    }
-
-    return res.json(results);
-  });
-};
-
-// 🔍 BUSCAR PROCESSO POR ID
-exports.getProcessById = (req, res) => {
-
-  const { id } = req.params;
-
-  const query = `
-    SELECT 
-      p.id,
-      p.process_number,
-      p.status,
-      p.priority,
-      a.name AS analyst,
-      ass.assigned_at
-    FROM processes p
-    JOIN assignments ass ON p.id = ass.process_id
-    JOIN analysts a ON a.id = ass.analyst_id
-    WHERE p.id = ?
-  `;
-
-  db.query(query, [id], (err, results) => {
-    if (err) {
-      console.log('ERRO GET BY ID:', err);
-      return res.status(500).json({
-        error: 'Erro ao buscar processo'
-      });
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({
-        error: 'Processo não encontrado'
-      });
-    }
-
-    return res.json(results[0]);
-  });
-};
-
-// 🔄 ATUALIZAR STATUS
+//  ATUALIZAR STATUS
 exports.updateStatus = (req, res) => {
 
   const { id } = req.params;
@@ -242,4 +299,108 @@ return res.json({
      });
   });
 };
+
+exports.deleteProcess = (req, res) => {
+
+  const { id } = req.params;
+
+  const query = `
+    DELETE FROM processes
+    WHERE id = ?
+  `;
+
+  db.query(query, [id], (err, result) => {
+
+    if (err) {
+
+      console.log('ERRO DELETE PROCESS:', err);
+
+      return res.status(500).json({
+        error: 'Erro ao excluir processo'
+      });
+
+    }
+
+    return res.json({
+      message: 'Processo excluído com sucesso'
+    });
+
+  });
+
+};
+
+exports.getProcessById = (req, res) => {
+
+  const { id } = req.params;
+
+  const query = `
+    SELECT *
+    FROM processes
+    WHERE id = ?
+  `;
+
+  db.query(query, [id], (err, results) => {
+
+    if (err) {
+
+      console.log('ERRO GET BY ID:', err);
+
+      return res.status(500).json({
+        error: 'Erro ao buscar processo'
+      });
+
+    }
+
+    if (results.length === 0) {
+
+      return res.status(404).json({
+        error: 'Processo não encontrado'
+      });
+
+    }
+
+    return res.json(results[0]);
+
+  });
+
+};
+
+exports.getProcesses = (req, res) => {
+
+  const query = `
+    SELECT 
+      p.id,
+      p.process_number,
+      p.status,
+      a.name AS analyst_name,
+      ass.assigned_at
+    FROM processes p
+    JOIN assignments ass
+      ON p.id = ass.process_id
+    JOIN analysts a
+      ON a.id = ass.analyst_id
+    ORDER BY ass.assigned_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+
+    if (err) {
+
+      console.log('ERRO GET:', err);
+
+      return res.status(500).json({
+        error: 'Erro ao buscar processos'
+      });
+
+    }
+
+    return res.json(results);
+
+  });
+
+};
+
+
+
+
 
