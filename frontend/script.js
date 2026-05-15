@@ -2,7 +2,7 @@ async function loadWorkload() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst');
+    const response = await fetch('https://pi-univesp-szqf.onrender.com/analyst');
 
     const data = await response.json();
 
@@ -81,7 +81,7 @@ async function criarAnalista() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst', {
+    const response = await fetch('https://pi-univesp-szqf.onrender.com/analyst', {
 
       method: 'POST',
 
@@ -117,7 +117,7 @@ async function listarAnalistas() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst');
+    const response = await fetch('https://pi-univesp-szqf.onrender.com/analyst');
 
     const data = await response.json();
 
@@ -173,7 +173,7 @@ async function alterarStatus(id, statusAtual) {
 
   try {
 
-    await fetch(`http://localhost:3000/analyst/${id}/status`, {
+    await fetch(`https://pi-univesp-szqf.onrender.com/analyst/${id}/status`, {
 
       method: 'PATCH',
 
@@ -215,7 +215,7 @@ async function criarProcesso() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/process', {
+    const response = await fetch('https://pi-univesp-szqf.onrender.com/process', {
 
       method: 'POST',
 
@@ -258,7 +258,7 @@ async function excluirAnalista(id) {
   try {
 
     const response = await fetch(
-      `http://localhost:3000/analyst/${id}`,
+      `https://pi-univesp-szqf.onrender.com/analyst/${id}`,
       {
         method: 'DELETE'
       }
@@ -285,7 +285,7 @@ async function listarProcessos() {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/process'
+      'https://pi-univesp-szqf.onrender.com/process'
     );
 
     const processos = await response.json();
@@ -343,7 +343,7 @@ async function excluirProcesso(id) {
   try {
 
     const response = await fetch(
-      `http://localhost:3000/process/${id}`,
+      `https://pi-univesp-szqf.onrender.com/process/${id}`,
       {
         method: 'DELETE'
       }
