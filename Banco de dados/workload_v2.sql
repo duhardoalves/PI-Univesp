@@ -122,6 +122,42 @@ SELECT COUNT(*)
 FROM assignments 
 WHERE process_id = 5;
 
+USE workload_v2;
+
+-- Alterações efetuadas após o primeiro teste no local --
+-- Incluindo coluna inatividade --
+ALTER TABLE analysts
+ADD inactive_days INT DEFAULT 0;
+
+DESCRIBE analysts;
+
+-- incluindo a separação da descrição do processo --
+ALTER TABLE processes
+ADD prefix VARCHAR(10),
+ADD process_year INT;
+
+DESCRIBE processes;
+
+SELECT *
+FROM processes;
+
+UPDATE processes
+SET
+  prefix = 'SB',
+  process_year = 2026
+WHERE prefix IS NULL;
+
+UPDATE processes
+SET
+  prefix = 'SB',
+  process_year = 2026
+WHERE id > 0
+AND prefix IS NULL;
+
+SELECT id, name, status
+FROM analysts;
+
+
 
 
 

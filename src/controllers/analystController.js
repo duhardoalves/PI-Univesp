@@ -77,8 +77,9 @@ exports.getAnalysts = (req, res) => {
     a.id,
     a.name,
     a.status,
+    a.inactive_days,
     COUNT(ass.id) AS total_processes
-  FROM analysts a
+FROM analysts a
   LEFT JOIN assignments ass
     ON a.id = ass.analyst_id
   GROUP BY a.id
@@ -198,3 +199,43 @@ exports.deleteAnalyst = (req, res) => {
 
 };
 
+// Alterar nome do analista
+exports.updateAnalyst = (req, res) => {
+
+  const { id } = req.params;
+
+  const { name } = req.body;
+
+  if (!name) {
+
+    return res.status(400).json({
+      error: 'Nome é obrigatório'
+    });
+
+  }
+
+  const query = `
+    UPDATE analysts
+    SET name = ?
+    WHERE id = ?
+  `;
+
+  db.query(query, [name, id], (err, result) => {
+
+    if (err) {
+
+      console.log('ERRO UPDATE:', err);
+
+      return res.status(500).json({
+        error: 'Erro ao atualizar analista'
+      });
+
+    }
+
+    return res.json({
+      message: 'Analista atualizado com sucesso'
+    });
+
+  });
+
+};

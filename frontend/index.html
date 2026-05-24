@@ -16,10 +16,22 @@
     <h2>Dashboard</h2>
 
     <select id="statusFilter">
-      <option value="ALL">Todos</option>
-      <option value="ACTIVE">Ativos</option>
-      <option value="INACTIVE">Inativos</option>
-    </select>
+     <option value="">
+       Selecione um filtro
+     </option>
+
+     <option value="ALL">
+       Todos
+     </option>
+
+     <option value="ACTIVE">
+       ATIVOS
+     </option>
+
+     <option value="INACTIVE">
+       INATIVOS
+     </option>
+  </select>
 
     <button onclick="loadWorkload()">
       Carregar Dashboard
@@ -51,7 +63,23 @@
 
     <h2>Gerenciamento de Processos</h2>
 
-    <input type="text" id="numeroProcesso" placeholder="Número do Processo">
+    <input
+  type="text"
+  id="prefix"
+  placeholder="Prefixo"
+/>
+
+<input
+  type="text"
+  id="numeroProcesso"
+  placeholder="Número"
+/>
+
+<input
+  type="number"
+  id="anoProcesso"
+  placeholder="Ano"
+/>
 
     <button onclick="criarProcesso()">
       Criar Processo
@@ -66,11 +94,23 @@
 
     <h2>Relatórios</h2>
 
-    <ul>
-      <li>Lista de Processos</li>
-      <li>Processos por Analista</li>
-      <li>Carga de Trabalho</li>
-    </ul>
+    <button onclick="relatorioProcessos()">
+  Lista de Processos
+</button>
+
+<button onclick="relatorioAnalistas()">
+  Processos por Analista
+</button>
+
+<button onclick="relatorioCarga()">
+  Carga de Trabalho
+</button>
+
+<button onclick="relatorioHistorico()">
+  Histórico
+</button>
+
+<div id="resultadoRelatorio"></div>
 
   </section>
 

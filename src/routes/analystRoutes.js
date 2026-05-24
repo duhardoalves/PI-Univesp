@@ -12,6 +12,8 @@ router.patch('/:id/status', controller.updateStatus);
 
 router.delete('/:id', controller.deleteAnalyst);
 
+router.put('/:id', controller.updateAnalyst);
+
 // 🔹 TESTE
 router.get('/teste', (req, res) => {
   res.send('rota analyst ok');

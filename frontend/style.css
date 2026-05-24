@@ -54,3 +54,42 @@ select {
   margin-right: 10px;
   margin-bottom: 15px;
 }
+
+.btn-delete {
+
+  background-color: red;
+
+  color: white;
+
+  border: none;
+
+}
+
+.btn-delete:hover {
+
+  background-color: darkred;
+
+}
+
+.btn-excluir {
+
+  background-color: red;
+
+  color: white;
+
+  border: none;
+
+  padding: 8px 12px;
+
+  border-radius: 5px;
+
+  cursor: pointer;
+
+}
+
+.btn-excluir:hover {
+
+  opacity: 0.8;
+
+}
+
