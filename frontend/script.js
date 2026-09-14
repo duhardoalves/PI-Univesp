@@ -3,7 +3,7 @@ async function loadWorkload() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst');
+    const response = await fetch('/analyst');
 
     const data = await response.json();
 
@@ -106,7 +106,7 @@ async function criarAnalista() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst', {
+    const response = await fetch('/analyst', {
 
       method: 'POST',
 
@@ -174,7 +174,7 @@ async function listarAnalistas() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/analyst');
+    const response = await fetch('/analyst');
 
     const data = await response.json();
 
@@ -240,7 +240,7 @@ async function alterarStatus(id, statusAtual) {
 
   try {
 
-    await fetch(`http://localhost:3000/analyst/${id}/status`, {
+    await fetch(`/analyst/${id}/status`, {
 
       method: 'PATCH',
 
@@ -288,7 +288,7 @@ async function criarProcesso() {
 
   try {
 
-    const response = await fetch('http://localhost:3000/process', {
+    const response = await fetch('/process', {
 
       method: 'POST',
 
@@ -339,7 +339,7 @@ async function excluirAnalista(id) {
   try {
 
     const response = await fetch(
-      `http://localhost:3000/analyst/${id}`,
+      `/analyst/${id}`,
       {
         method: 'DELETE'
       }
@@ -366,7 +366,7 @@ async function listarProcessos() {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/process'
+      '/process'
     );
 
     const processos = await response.json();
@@ -458,7 +458,7 @@ async function excluirProcesso(id, status) {
 
     const response = await fetch(
 
-      `http://localhost:3000/process/${id}`,
+      `/process/${id}`,
 
       {
         method: 'DELETE'
@@ -506,7 +506,7 @@ async function editarAnalista(id, nomeAtual) {
   try {
 
     const response = await fetch(
-      `http://localhost:3000/analyst/${id}`,
+      `/analyst/${id}`,
       {
 
         method: 'PUT',
@@ -579,7 +579,7 @@ async function alterarStatusProcesso(id) {
 
     const response = await fetch(
 
-      `http://localhost:3000/process/${id}/status`,
+      `/process/${id}/status`,
 
       {
 
@@ -649,7 +649,7 @@ async function alterarStatusAnalista(id) {
 
     const response = await fetch(
 
-      `http://localhost:3000/analyst/${id}/status`,
+      `/analyst/${id}/status`,
 
       {
 
@@ -720,7 +720,7 @@ function relatorioProcessos() {
 
 `;
 
-fetch('http://localhost:3000/process')
+fetch('/process')
 
   .then(response => response.json())
 
@@ -811,7 +811,7 @@ function relatorioAnalistas() {
 
   `;
 
-  fetch('http://localhost:3000/process')
+  fetch('/process')
 
     .then(response => response.json())
 
@@ -898,7 +898,7 @@ function relatorioCarga() {
 
   `;
 
-  fetch('http://localhost:3000/process/workload')
+  fetch('/process/workload')
 
     .then(response => response.json())
 
@@ -980,7 +980,7 @@ function relatorioHistorico() {
 
   `;
 
-  fetch('http://localhost:3000/process')
+  fetch('/process')
 
     .then(response => response.json())
 
