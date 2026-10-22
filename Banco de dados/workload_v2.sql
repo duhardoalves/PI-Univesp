@@ -157,6 +157,50 @@ AND prefix IS NULL;
 SELECT id, name, status
 FROM analysts;
 
+-- 2026/10/06 - Alterando a Tabela Analistas incluindo a coluna processo final --
+
+ALTER TABLE analysts
+ADD COLUMN process_final TINYINT NULL;
+
+DESCRIBE analysts;
+
+-- 2026/10/08 - Conferir o cadastro pelo banco / Cadastro do analista → nome + final do processo → banco de dados. --
+
+SELECT id, name, status, process_final
+FROM analysts
+ORDER BY id;
+
+UPDATE analysts
+SET process_final = 1
+WHERE id = 14;
+
+SELECT id, name, status, process_final
+FROM analysts
+ORDER BY id;
+
+SELECT id, name, status, process_final
+FROM analysts
+ORDER BY id;
+
+
+-- 2026/10/16 - conferir os analistas cadastrados → banco de dados. --
+
+SELECT id, name, status, process_final
+FROM analysts
+ORDER BY process_final;
+
+SELECT id, name, status, process_final
+FROM analysts
+ORDER BY id;
+
+
+-- 2026/10/17 - Criar uma coluna para guardar a data de inativação --
+
+DESCRIBE analysts;
+
+ALTER TABLE analysts
+ADD COLUMN inactive_since DATE NULL;
+
 
 
 

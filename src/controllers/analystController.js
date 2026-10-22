@@ -3,15 +3,25 @@ const db = require('../config/db');
 // 🔹 CRIAR ANALISTA
 exports.createAnalyst = (req, res) => {
 
-  const { name } = req.body;
+  const { name, process_final } = req.body;
 
-  if (!name) {
+  if (!name || process_final === undefined || process_final === null) {
 
     return res.status(400).json({
-      error: 'Nome é obrigatório'
+      error: 'Nome e final do processo são obrigatórios'
     });
 
   }
+
+  if (
+  !Number.isInteger(Number(process_final)) ||
+  Number(process_final) < 0 ||
+  Number(process_final) > 9
+) {
+  return res.status(400).json({
+    error: 'O final do processo deve ser um número inteiro entre 0 e 9'
+  });
+}
 
   // VERIFICA DUPLICIDADE
   const checkQuery = `
@@ -42,11 +52,11 @@ exports.createAnalyst = (req, res) => {
 
     // INSERIR ANALISTA
     const query = `
-      INSERT INTO analysts (name)
-      VALUES (?)
+      INSERT INTO analysts (name, process_final)
+      VALUES (?, ?)
     `;
 
-    db.query(query, [name], (err, result) => {
+    db.query(query, [name, process_final], (err, result) => {
 
       if (err) {
 
@@ -60,7 +70,9 @@ exports.createAnalyst = (req, res) => {
 
       return res.json({
         message: 'Analista criado com sucesso',
-        analyst_id: result.insertId
+        analyst_id: result.insertId,
+        process_final: process_final
+
       });
 
     });
@@ -74,11 +86,16 @@ exports.getAnalysts = (req, res) => {
 
   const query = `
   SELECT
-    a.id,
-    a.name,
-    a.status,
-    a.inactive_days,
-    COUNT(ass.id) AS total_processes
+  a.id,
+  a.name,
+  a.process_final,
+  a.status,
+  CASE
+    WHEN a.status = 'INACTIVE' AND a.inactive_since IS NOT NULL
+      THEN DATEDIFF(CURDATE(), a.inactive_since)
+    ELSE 0
+  END AS inactive_days,
+  COUNT(ass.id) AS total_processes
 FROM analysts a
   LEFT JOIN assignments ass
     ON a.id = ass.analyst_id
@@ -116,11 +133,16 @@ exports.updateStatus = (req, res) => {
 
   const query = `
     UPDATE analysts
-    SET status = ?
+    SET
+      status = ?,
+      inactive_since = CASE
+        WHEN ? = 'INACTIVE' THEN COALESCE(inactive_since, CURDATE())
+        ELSE NULL
+      END
     WHERE id = ?
   `;
 
-  db.query(query, [status, id], (err, result) => {
+  db.query(query, [status, status, id], (err, result) => {
 
     if (err) {
 

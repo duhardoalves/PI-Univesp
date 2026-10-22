@@ -93,3 +93,64 @@ select {
 
 }
 
+#listaAnalistas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.linha-analista {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) 120px 120px 120px minmax(300px, auto);
+  align-items: center;
+  gap: 12px;
+  min-width: 850px;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.acoes-analista {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acoes-analista button {
+  margin-bottom: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+#listaProcessos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.linha-processo {
+  display: grid;
+  grid-template-columns: minmax(240px, 2fr) 150px 200px minmax(270px, auto);
+  align-items: center;
+  gap: 12px;
+  min-width: 920px;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.acoes-processo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acoes-processo button {
+  margin-bottom: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
+}

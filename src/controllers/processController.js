@@ -11,51 +11,63 @@ exports.createProcess = (req, res) => {
     });
   }
 
-  const finaisAnalistas = {
-  1: 'Adriana',
-  2: 'Luísa',
-  3: 'Carlos',
-  5: 'Lucas',
-  7: 'Carlos Eduardo',
-  9: 'Kelvin'
-};
-
-  const ordemFinais = [1, 2, 3, 5, 7, 9];
+  const ordemFinais = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const limiteDiferenca = 2;
 
   const numerosProcesso = process_number
-    .toString()
-    .split('')
-    .reverse();
+  .toString()
+  .split('')
+  .reverse();
 
-  let indiceInicial = -1;
+  const finaisDisponiveis = [];
 
-  for (let numero of numerosProcesso) {
-    const digito = Number(numero);
-    indiceInicial = ordemFinais.indexOf(digito);
+  const queryFinais = `
+  SELECT DISTINCT process_final
+  FROM analysts
+  WHERE status = 'ACTIVE'
+    AND process_final IS NOT NULL
+`;
 
-    if (indiceInicial !== -1) {
-      break;
-    }
-  }
+db.query(queryFinais, (err, resultadosFinais) => {
 
-  if (indiceInicial === -1) {
-    return res.status(400).json({
-      error: 'Não foi possível identificar um final válido para distribuição'
+  if (err) {
+    return res.status(500).json({
+      error: 'Erro ao consultar finais dos analistas'
     });
   }
 
-  const candidatos = [];
+  
+  resultadosFinais.forEach((item) => {
+    finaisDisponiveis.push(Number(item.process_final));
+  });
 
-  for (let i = 0; i < ordemFinais.length; i++) {
-    const indice = (indiceInicial + i) % ordemFinais.length;
-    const final = ordemFinais[indice];
-    const nome = finaisAnalistas[final];
+    
+const finalEncontrado = numerosProcesso.find((numero) =>
+  finaisDisponiveis.includes(Number(numero))
+);
 
-    if (nome && !candidatos.includes(nome)) {
-      candidatos.push(nome);
-    }
+if (finalEncontrado === undefined) {
+  return res.status(400).json({
+    error: 'Não foi possível identificar um final válido para distribuição'
+  });
+}
+
+const candidatos = [];
+const indiceInicial = numerosProcesso.findIndex((numero) =>
+  Number(numero) === Number(finalEncontrado)
+);
+
+for (let i = indiceInicial; i < numerosProcesso.length; i++) {
+  const final = Number(numerosProcesso[i]);
+
+  if (
+    finaisDisponiveis.includes(final) &&
+    !candidatos.includes(final)
+  ) {
+    candidatos.push(final);
   }
+}
+
 
   const checkProcess = `
     SELECT 
@@ -92,17 +104,19 @@ exports.createProcess = (req, res) => {
       const placeholders = candidatos.map(() => '?').join(',');
 
       const workloadQuery = `
+        
         SELECT
-          a.id,
-          a.name,
-          COUNT(ass.id) AS total_processes
+        a.id,
+        a.name,
+        a.process_final,
+        COUNT(ass.id) AS total_processes
         FROM analysts a
         LEFT JOIN assignments ass
           ON a.id = ass.analyst_id
         WHERE
           a.status = 'ACTIVE'
-          AND a.name IN (${placeholders})
-        GROUP BY a.id, a.name
+          AND a.process_final IN (${placeholders})
+        GROUP BY a.id, a.name, a.process_final
       `;
 
       db.query(workloadQuery, candidatos, (err, workloads) => {
@@ -119,23 +133,27 @@ exports.createProcess = (req, res) => {
           });
         }
 
-        const menorCarga = Math.min(
-          ...workloads.map((item) => item.total_processes)
-        );
+      const menorCarga = Math.min(
+        ...workloads.map((item) => item.total_processes)
+      );
 
-        let analistaFinal = null;
+      
+      let analistaFinal = null;
 
-        for (let nome of candidatos) {
-          const analista = workloads.find((item) => item.name === nome);
+        
+for (let final of candidatos) {
+  const analista = workloads.find(
+    (item) => Number(item.process_final) === final
+  );
 
-          if (
-            analista &&
-            analista.total_processes - menorCarga <= limiteDiferenca
-          ) {
-            analistaFinal = analista;
-            break;
-          }
-        }
+  if (
+    analista &&
+    analista.total_processes - menorCarga <= limiteDiferenca
+  ) {
+    analistaFinal = analista;
+    break;
+  }
+}
 
         if (!analistaFinal) {
           analistaFinal = workloads.sort(
@@ -227,6 +245,7 @@ exports.createProcess = (req, res) => {
     }
   );
 
+  });
 };
 
 //  ATUALIZAR STATUS
@@ -410,8 +429,5 @@ exports.getProcesses = (req, res) => {
   });
 
 };
-
-
-
 
 

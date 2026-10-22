@@ -95,12 +95,16 @@ function createChart(data) {
 
 async function criarAnalista() {
 
-  const nome = document.getElementById('nomeAnalista').value;
+  const nome = document.getElementById('nomeAnalista').value.trim();
+  const process_final = document.getElementById('finalAnalista').value;
 
   if (!nome) {
-
     alert('Digite o nome do analista');
+    return;
+  }
 
+  if (process_final === '') {
+    alert('Selecione o final do processo');
     return;
   }
 
@@ -115,7 +119,8 @@ async function criarAnalista() {
       },
 
       body: JSON.stringify({
-        name: nome
+        name: nome,
+        process_final: Number(process_final)
       })
 
     });
@@ -124,16 +129,20 @@ async function criarAnalista() {
 
     alert(data.message || data.error);
 
-  
+    if (!response.ok) {
+      return;
+    }
+
     document.getElementById('nomeAnalista').value = '';
+    document.getElementById('finalAnalista').value = '';
 
     loadWorkload();
-
     listarAnalistas();
 
   } catch (error) {
 
     console.log('ERRO AO CRIAR ANALISTA:', error);
+    alert('Erro de comunicação com o servidor.');
 
   }
 
@@ -185,44 +194,30 @@ async function listarAnalistas() {
     data.forEach((analyst) => {
 
       lista.innerHTML += `
-        <div class="card">
+       <div class="linha-analista">
+       <span>${analyst.name}</span>
+       <span>Final ${analyst.process_final}</span>
+       <span>${traduzirStatusAnalista(analyst.status)}</span>
+       <span>${analyst.inactive_days ?? 0} dias</span>
 
-          <h3>${analyst.name}</h3>
+       <div class="acoes-analista">
+         <button onclick="alterarStatusAnalista(${analyst.id}, '${analyst.status}')">
+           ${analyst.status === 'ACTIVE' ? 'Inativar' : 'Ativar'}
+       </button>
 
-          <p>Status: ${traduzirStatusAnalista(analyst.status)}</p>
+       ${analyst.status === 'INACTIVE'
+         ? `<button class="btn-delete" onclick="excluirAnalista(${analyst.id})">Excluir</button>`
+         : ''
+       }
 
-          <p>
-            Inatividade:
-            ${analyst.inactive_days} dias
-          </p>
+       <button onclick="editarAnalista(${analyst.id}, '${analyst.name}')">
+         Editar
+       </button>
+      </div>
+    </div>
+  `;
 
-          <button onclick="alterarStatusAnalista(${analyst.id}, '${analyst.status}')">
-
-            ${analyst.status === 'ACTIVE'
-              ? 'Inativar'
-              : 'Ativar'}
-
-          </button>
-
-          ${analyst.status === 'INACTIVE'
-            ? `
-              <button
-                class="btn-delete"
-                onclick="excluirAnalista(${analyst.id})"
-              >
-                Excluir
-              </button>
-            `
-            : ''
-          }
-
-          <button onclick="editarAnalista(${analyst.id}, '${analyst.name}')">
-            Editar
-          </button>
-        </div>
-      `;
-
-    });
+  });
 
   } catch (error) {
 
@@ -362,76 +357,48 @@ async function excluirAnalista(id) {
 }
 
 async function listarProcessos() {
-
   try {
-
     const response = await fetch(
       '/process'
     );
-
     const processos = await response.json();
-
-    const lista = document.getElementById(
-      'listaProcessos'
-    );
+    const lista = document.getElementById('listaProcessos');
 
     lista.innerHTML = '';
 
     processos.forEach((processo) => {
-
       lista.innerHTML += `
-        <div class="card">
+        <div class="linha-processo">
+          <span>
+            ${processo.prefix} ${processo.process_number}/${processo.process_year}
+          </span>
 
-          <h3>
-            ${processo.prefix}
-            ${processo.process_number}/${processo.process_year}
-          </h3>
-
-          <p>
-            Status:
+          <span>
             ${traduzirStatusProcesso(processo.status)}
-          </p>
+          </span>
 
-          <p>
-            Analista:
+          <span>
             ${processo.analyst_name || 'Não atribuído'}
-          </p>
+          </span>
 
-          <button
-            onclick="alterarStatusProcesso(${processo.id})"
-          >
-            Alterar Status
-          </button>
+          <div class="acoes-processo">
+            <button onclick="alterarStatusProcesso(${processo.id})">
+              Alterar Status
+            </button>
 
-          <button
-
-            class="btn-excluir"
-
-            onclick="excluirProcesso(
-              ${processo.id},
-              '${processo.status}'
-            )"
-
-          >
-
-            Excluir
-
-          </button>
-
+            <button
+              class="btn-excluir"
+              onclick="excluirProcesso(${processo.id}, '${processo.status}')"
+            >
+              Excluir
+            </button>
+          </div>
         </div>
       `;
-
     });
-
   } catch (error) {
-
-    console.log(
-      'ERRO AO LISTAR PROCESSOS:',
-      error
-    );
-
+    console.log('ERRO AO LISTAR PROCESSOS:', error);
   }
-
 }
 
 async function excluirProcesso(id, status) {

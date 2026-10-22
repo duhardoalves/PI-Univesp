@@ -44,19 +44,41 @@
   </section>
 
   <!-- ANALISTAS -->
-  <section class="bloco">
+  
+<section class="bloco">
 
-    <h2>Gerenciamento de Analistas</h2>
+  <h2>Gerenciamento de Analistas</h2>
 
-    <input type="text" id="nomeAnalista" placeholder="Nome do Analista">
+  <input
+    type="text"
+    id="nomeAnalista"
+    placeholder="Nome do Analista"
+  >
 
-    <button onclick="criarAnalista()">
-      Criar Analista
-    </button>
+  
+<select id="finalAnalista">
+  <option value="">Selecione o final do processo</option>
+  <option value="0">Final 0</option>
+  <option value="1">Final 1</option>
+  <option value="2">Final 2</option>
+  <option value="3">Final 3</option>
+  <option value="4">Final 4</option>
+  <option value="5">Final 5</option>
+  <option value="6">Final 6</option>
+  <option value="7">Final 7</option>
+  <option value="8">Final 8</option>
+  <option value="9">Final 9</option>
+</select>
 
-    <div id="listaAnalistas"></div>
 
-  </section>
+  <button onclick="criarAnalista()">
+    Criar Analista
+  </button>
+
+  <div id="listaAnalistas"></div>
+
+</section>
+
 
   <!-- PROCESSOS -->
   <section class="bloco">
